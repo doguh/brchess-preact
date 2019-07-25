@@ -1,8 +1,9 @@
 import { h, Component } from 'preact';
+import Game from './Game';
 
 class App extends Component {
   render() {
-    return <div>Hello World!</div>;
+    return <Game />;
   }
 }
 
