@@ -11,9 +11,15 @@ const times = num => fn => {
   return arr;
 };
 
+const getKey = (x, y) => `${x}${y}`;
+
 const white = 0;
 
 class Game extends Component {
+  state = {
+    selected: null,
+  };
+
   componentWillMount() {
     this.board = new Chess.Board(Chess.getDefaultBoardState());
   }
@@ -24,6 +30,27 @@ class Game extends Component {
   }
 
   render() {
+    const { selected } = this.state;
+    console.log({ selected });
+
+    const allowedMoves = this.board.getLegalMoves();
+
+    let currentSelectedIsMovable = false;
+    const highlight = allowedMoves.reduce((acc, move) => {
+      acc[getKey(move.from.x, move.from.y)] = 'movable';
+      if (
+        selected &&
+        selected.x === move.from.x &&
+        selected.y === move.from.y
+      ) {
+        currentSelectedIsMovable = true;
+        move.to.forEach(dest => {
+          acc[getKey(dest.x, dest.y)] = 'dest';
+        });
+      }
+      return acc;
+    }, {});
+
     return (
       <table>
         {times(9)(i => {
@@ -32,17 +59,41 @@ class Game extends Component {
               {times(9)(j => {
                 const x = j - 1;
                 const y = 8 - i - 1;
+                const key = getKey(x, y);
                 if (x === -1) {
-                  return y === -1 ? <th /> : <th>{y + 1}</th>;
+                  return y === -1 ? (
+                    <th key={key} />
+                  ) : (
+                    <th key={key}>{y + 1}</th>
+                  );
                 } else if (y === -1) {
                   return (
-                    <th>{String.fromCharCode(x + 1 + 96).toUpperCase()}</th>
+                    <th key={key}>
+                      {String.fromCharCode(x + 1 + 96).toUpperCase()}
+                    </th>
                   );
                 } else {
                   const square = this.board.getSquare(x, y);
                   const piece = square.piece;
                   return (
-                    <td class={`${square.color === white ? 'w' : 'b'}`}>
+                    <td
+                      key={key}
+                      class={`${
+                        square.color === white ? 'white' : 'black'
+                      } ${highlight[key] || ''}`}
+                      onClick={() => {
+                        if (
+                          currentSelectedIsMovable &&
+                          highlight[key] === 'dest'
+                        ) {
+                          this.board.move(selected.x, selected.y, x, y);
+                        }
+                        this.setState({
+                          selected: piece,
+                          canMove: highlight[key],
+                        });
+                      }}
+                    >
                       {piece ? renderPiece(piece) : null}
                     </td>
                   );
