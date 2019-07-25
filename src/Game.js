@@ -33,10 +33,12 @@ class Game extends Component {
     const { selected } = this.state;
     console.log({ selected });
 
-    const { isCheck, isCheckMate, isPat } = this.board;
-    console.log({ isCheck, isCheckMate, isPat });
+    const { isCheck, isCheckMate, isPat, isWin, winner } = this.board;
+    console.log({ isCheck, isCheckMate, isPat, isWin, winner });
 
     const allowedMoves = this.board.getLegalMoves();
+
+    console.log('BOARD STATE', this.board.state);
 
     let currentSelectedIsMovable = false;
     const highlight = allowedMoves.reduce((acc, move) => {
