@@ -33,6 +33,9 @@ class Game extends Component {
     const { selected } = this.state;
     console.log({ selected });
 
+    const { isCheck, isCheckMate, isPat } = this.board;
+    console.log({ isCheck, isCheckMate, isPat });
+
     const allowedMoves = this.board.getLegalMoves();
 
     let currentSelectedIsMovable = false;
@@ -52,57 +55,79 @@ class Game extends Component {
     }, {});
 
     return (
-      <table>
-        {times(9)(i => {
-          return (
-            <tr>
-              {times(9)(j => {
-                const x = j - 1;
-                const y = 8 - i - 1;
-                const key = getKey(x, y);
-                if (x === -1) {
-                  return y === -1 ? (
-                    <th key={key} />
-                  ) : (
-                    <th key={key}>{y + 1}</th>
-                  );
-                } else if (y === -1) {
-                  return (
-                    <th key={key}>
-                      {String.fromCharCode(x + 1 + 96).toUpperCase()}
-                    </th>
-                  );
-                } else {
-                  const square = this.board.getSquare(x, y);
-                  const piece = square.piece;
-                  return (
-                    <td
-                      key={key}
-                      class={`${
-                        square.color === white ? 'white' : 'black'
-                      } ${highlight[key] || ''}`}
-                      onClick={() => {
-                        if (
-                          currentSelectedIsMovable &&
-                          highlight[key] === 'dest'
-                        ) {
-                          this.board.move(selected.x, selected.y, x, y);
-                        }
-                        this.setState({
-                          selected: piece,
-                          canMove: highlight[key],
-                        });
-                      }}
-                    >
-                      {piece ? renderPiece(piece) : null}
-                    </td>
-                  );
-                }
-              })}
-            </tr>
-          );
-        })}{' '}
-      </table>
+      <div>
+        <table>
+          {times(9)(i => {
+            return (
+              <tr>
+                {times(9)(j => {
+                  const x = j - 1;
+                  const y = 8 - i - 1;
+                  const key = getKey(x, y);
+                  if (x === -1) {
+                    return y === -1 ? (
+                      <th key={key} />
+                    ) : (
+                      <th key={key}>{y + 1}</th>
+                    );
+                  } else if (y === -1) {
+                    return (
+                      <th key={key}>
+                        {String.fromCharCode(x + 1 + 96).toUpperCase()}
+                      </th>
+                    );
+                  } else {
+                    const square = this.board.getSquare(x, y);
+                    const piece = square.piece;
+                    return (
+                      <td
+                        key={key}
+                        class={`${
+                          square.color === white ? 'white' : 'black'
+                        } ${highlight[key] || ''}`}
+                        onClick={() => {
+                          if (
+                            currentSelectedIsMovable &&
+                            highlight[key] === 'dest'
+                          ) {
+                            this.board.move(selected.x, selected.y, x, y);
+                          }
+                          this.setState({
+                            selected: piece,
+                            canMove: highlight[key],
+                          });
+                        }}
+                      >
+                        {piece ? renderPiece(piece) : null}
+                      </td>
+                    );
+                  }
+                })}
+              </tr>
+            );
+          })}
+        </table>
+        <div>
+          <button
+            disabled={this.board.history.numPrev === 0}
+            onClick={() => {
+              this.board.history.goPrev();
+              this.setState({ selected: null });
+            }}
+          >
+            PREV
+          </button>
+          <button
+            disabled={this.board.history.numNext === 0}
+            onClick={() => {
+              this.board.history.goNext();
+              this.setState({ selected: null });
+            }}
+          >
+            NEXT
+          </button>
+        </div>
+      </div>
     );
   }
 }
