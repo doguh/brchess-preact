@@ -31,6 +31,7 @@ class Game extends Component {
 
   render() {
     const { selected } = this.state;
+    const boardState = this.board.getState();
     console.log({ selected });
 
     const { isCheck, isCheckMate, isPat, isWin, winner } = this.board;
@@ -38,7 +39,7 @@ class Game extends Component {
 
     const allowedMoves = this.board.getLegalMoves();
 
-    console.log('BOARD STATE', this.board.state);
+    console.log('BOARD STATE', boardState);
 
     let currentSelectedIsMovable = false;
     const highlight = allowedMoves.reduce((acc, move) => {
@@ -109,6 +110,23 @@ class Game extends Component {
             );
           })}
         </table>
+        <p>
+          Au tour du joueur{' '}
+          {boardState.whoseTurn === Chess.White ? 'Blanc' : 'Noir'}
+        </p>
+        {isCheck || isPat || isWin ? (
+          <p>
+            {isCheckMate
+              ? 'Échec et mat'
+              : isCheck
+              ? 'Échec au roi'
+              : isPat
+              ? 'Pat'
+              : isWin
+              ? `Gagnant : joueur ${winner === Chess.White ? 'Blanc' : 'Noir'}`
+              : ''}
+          </p>
+        ) : null}
         <div>
           <button
             disabled={this.board.history.numPrev === 0}
