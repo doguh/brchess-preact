@@ -21,7 +21,7 @@ class Game extends Component {
   };
 
   componentWillMount() {
-    this.board = new Chess.Board(Chess.getDefaultBoardState());
+    this.board = new Chess.Board(Chess.getRandomBoardState());
   }
 
   componentWillUnmount() {
@@ -57,8 +57,31 @@ class Game extends Component {
       return acc;
     }, {});
 
+    const toPromote = this.board.mustBePromoted;
+
     return (
       <div>
+        {toPromote ? (
+          <div>
+            <p>
+              Le pion du joueur
+              {toPromote.color === Chess.White ? 'Blanc' : 'Noir'} doit être
+              promu :{' '}
+              {[Chess.Queen, Chess.Bishop, Chess.Knight, Chess.Rook].map(
+                pieceType => (
+                  <button
+                    onClick={() => {
+                      this.board.promote(pieceType);
+                      this.setState({});
+                    }}
+                  >
+                    {renderPiece({ ...toPromote, type: pieceType.key })}
+                  </button>
+                )
+              )}
+            </p>
+          </div>
+        ) : null}
         <table>
           {times(9)(i => {
             return (
