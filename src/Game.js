@@ -18,6 +18,7 @@ const white = 0;
 class Game extends Component {
   state = {
     selected: null,
+    p2bot: false,
   };
 
   componentWillMount() {
@@ -29,8 +30,27 @@ class Game extends Component {
     this.board = null;
   }
 
+  componentWillUpdate(nextProps, nextState) {
+    if (
+      nextState.p2bot &&
+      this.board &&
+      this.board.getState().whoseTurn === Chess.Black
+    ) {
+      try {
+        const moves = this.board.getLegalMovesFlat();
+        const { x, y, toX, toY } = moves[
+          Math.floor(Math.random() * moves.length)
+        ];
+        this.board.move(x, y, toX, toY);
+      } catch (e) {
+        console.error('dumb bot');
+        console.error(e);
+      }
+    }
+  }
+
   render() {
-    const { selected } = this.state;
+    const { selected, p2bot } = this.state;
     const boardState = this.board.getState();
     console.log({ selected });
 
@@ -61,6 +81,16 @@ class Game extends Component {
 
     return (
       <div>
+        <p>
+          <label>
+            <input
+              type="checkbox"
+              checked={p2bot}
+              onChange={e => this.setState({ p2bot: e.target.checked })}
+            />{' '}
+            Joueur 2 auto play
+          </label>
+        </p>
         {toPromote ? (
           <div>
             <p>
@@ -155,7 +185,7 @@ class Game extends Component {
             disabled={this.board.history.numPrev === 0}
             onClick={() => {
               this.board.history.goPrev();
-              this.setState({ selected: null });
+              this.setState({ selected: null, p2bot: false });
             }}
           >
             PREV
@@ -164,7 +194,7 @@ class Game extends Component {
             disabled={this.board.history.numNext === 0}
             onClick={() => {
               this.board.history.goNext();
-              this.setState({ selected: null });
+              this.setState({ selected: null, p2bot: false });
             }}
           >
             NEXT
