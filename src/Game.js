@@ -19,6 +19,7 @@ class Game extends Component {
   state = {
     selected: null,
     p2bot: false,
+    inverse: false,
   };
 
   componentWillMount() {
@@ -33,15 +34,22 @@ class Game extends Component {
 
   componentWillUpdate(nextProps, nextState) {
     if (nextState.p2bot && !this.state.p2bot) {
-      this.ai = new Chess.AI(this.board, Chess.Black, 500);
+      this.ai = new Chess.AI(
+        this.board,
+        nextState.inverse ? Chess.White : Chess.Black,
+        500
+      );
+      // this.ai2 = new Chess.AI(this.board, Chess.White, 50);
     } else if (!nextState.p2bot && this.state.p2bot) {
       this.ai.destroy();
       this.ai = null;
+      // this.ai2.destroy();
+      // this.ai2 = null;
     }
   }
 
   render() {
-    const { selected, p2bot } = this.state;
+    const { selected, p2bot, inverse } = this.state;
     const boardState = this.board.getState();
     console.log({ selected });
 
@@ -83,6 +91,16 @@ class Game extends Component {
           </label>
         </p>
         <p>
+          <label>
+            <input
+              type="checkbox"
+              checked={inverse}
+              onChange={e => this.setState({ inverse: e.target.checked })}
+            />{' '}
+            Changer de côté
+          </label>
+        </p>
+        <p>
           Joueur 1 :{' '}
           {boardState.pieces
             .filter(piece => piece.color === Chess.White)
@@ -120,8 +138,8 @@ class Game extends Component {
             return (
               <tr>
                 {times(9)(j => {
-                  const x = j - 1;
-                  const y = 8 - i - 1;
+                  const x = inverse ? Chess.WIDTH - j - 1 : j - 1;
+                  const y = inverse ? i - 1 : Chess.HEIGHT - i - 1;
                   const key = getKey(x, y);
                   if (x === -1) {
                     return y === -1 ? (
@@ -148,7 +166,9 @@ class Game extends Component {
                           if (
                             currentSelectedIsMovable &&
                             highlight[key] === 'dest' &&
-                            (selected.color === Chess.White || !p2bot)
+                            (!p2bot ||
+                              selected.color ===
+                                (inverse ? Chess.Black : Chess.White))
                           ) {
                             return this.board.move(
                               selected.x,
@@ -172,7 +192,7 @@ class Game extends Component {
           })}
         </table>
         <p>
-          Au tour du joueur{' '}
+          Tour {boardState.turn || 1} - Joueur{' '}
           {boardState.whoseTurn === Chess.White ? 'Blanc' : 'Noir'}
         </p>
         {isCheck || isPat || isWin ? (
