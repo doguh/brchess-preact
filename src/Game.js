@@ -23,6 +23,7 @@ class Game extends Component {
 
   componentWillMount() {
     this.board = new Chess.Board(Chess.getRandomBoardState());
+    this.board.history.subscribe(() => this.setState());
   }
 
   componentWillUnmount() {
@@ -31,21 +32,11 @@ class Game extends Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    if (
-      nextState.p2bot &&
-      this.board &&
-      this.board.getState().whoseTurn === Chess.Black
-    ) {
-      try {
-        const moves = this.board.getLegalMovesFlat();
-        const { x, y, toX, toY } = moves[
-          Math.floor(Math.random() * moves.length)
-        ];
-        this.board.move(x, y, toX, toY);
-      } catch (e) {
-        console.error('dumb bot');
-        console.error(e);
-      }
+    if (nextState.p2bot && !this.state.p2bot) {
+      this.ai = new Chess.AI(this.board, Chess.Black, 500);
+    } else if (!nextState.p2bot && this.state.p2bot) {
+      this.ai.destroy();
+      this.ai = null;
     }
   }
 
@@ -90,6 +81,18 @@ class Game extends Component {
             />{' '}
             Joueur 2 auto play
           </label>
+        </p>
+        <p>
+          Joueur 1 :{' '}
+          {boardState.pieces
+            .filter(piece => piece.color === Chess.White)
+            .map(piece => renderPiece(piece))}
+        </p>
+        <p>
+          Joueur 2 :{' '}
+          {boardState.pieces
+            .filter(piece => piece.color === Chess.Black)
+            .map(piece => renderPiece(piece))}
         </p>
         {toPromote ? (
           <div>
@@ -144,13 +147,18 @@ class Game extends Component {
                         onClick={() => {
                           if (
                             currentSelectedIsMovable &&
-                            highlight[key] === 'dest'
+                            highlight[key] === 'dest' &&
+                            (selected.color === Chess.White || !p2bot)
                           ) {
-                            this.board.move(selected.x, selected.y, x, y);
+                            return this.board.move(
+                              selected.x,
+                              selected.y,
+                              x,
+                              y
+                            );
                           }
                           this.setState({
                             selected: piece,
-                            canMove: highlight[key],
                           });
                         }}
                       >
